@@ -1,7 +1,7 @@
 import csv
 import requests
+import os
 
-# Function to retrieve groups for a user
 def get_user_groups(user_id, access_token):
     try:
         groups_url = f"https://graph.microsoft.com/v1.0/users/{user_id}/memberOf"
@@ -16,8 +16,7 @@ def get_user_groups(user_id, access_token):
     except KeyError as ke:
         print(f"KeyError while retrieving groups for user {user_id}: {ke}")
         return []
-
-# Function to retrieve all users in the organization
+    
 def get_all_users(access_token):
     all_users = []
     try:
@@ -34,21 +33,18 @@ def get_all_users(access_token):
         print(f"Error retrieving users: {e}")
         return []
 
-# Main function
 def main():
-    # Replace with your access token
-    access_token = '<token>'
     try:
-        # Retrieve all users in the organization
+        #access token should be passed as environment variable (export ACCESS_TOKEN="<replace access token here>")
+        access_token = os.environ.get('ACCESS_TOKEN')
+        if access_token is None:
+            raise ValueError("Access token environment variable not found")
         print("Retrieving all users...")
         all_users = get_all_users(access_token)
         print(f"Total users retrieved: {len(all_users)}")
-
-        # Write user details and their groups to CSV file
         with open('user_groups.csv', mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             writer.writerow(['User Name', 'Email', 'User ID', 'Groups', 'Active State'])
-
             for user in all_users:
                 user_id = user.get('id', '')
                 user_name = user.get('displayName', '')
@@ -65,6 +61,6 @@ def main():
         print(f"An I/O error occurred: {ioe}")
     except Exception as ex:
         print(f"An unexpected error occurred: {ex}")
-
 if __name__ == "__main__":
     main()
+
